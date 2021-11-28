@@ -81,6 +81,7 @@ function basebutton(widget_id, url, skin, parameters)
         args["entity_id"] = self.entity;
         args["state"] = button_state;
         args["action"] = action;
+        args["duration"] = 0;
 
         self.call_service(self, args);
         self.action = action;
