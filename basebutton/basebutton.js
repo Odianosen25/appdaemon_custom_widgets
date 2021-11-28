@@ -71,7 +71,7 @@ function basebutton(widget_id, url, skin, parameters)
                 action = "released";
 
             } else {
-                action = "released-hold";
+                action = "release-hold";
             }
         }
 
