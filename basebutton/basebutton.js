@@ -8,6 +8,8 @@ function basebutton(widget_id, url, skin, parameters)
     var monitored_entities = [];
     self.parameters = parameters;
     self.entity = self.parameters.entity;
+    self.hold_time = self.parameters.hold_time;
+    self.repeat_interval = self.parameters.repeat_interval || 1;
     self.state = undefined;
     self.action = undefined;
     self.timer = undefined;
@@ -48,7 +50,9 @@ function basebutton(widget_id, url, skin, parameters)
             button_state = "on"
             action = "pressed";
 
-            self.timer = setTimeout(run_timer, 1500, true, Date.now()); // ran if button not released after 1.5 seconds
+            if (self.hold_time !== undefined) {
+                self.timer = setTimeout(run_timer, self.hold_time * 1000, true, Date.now());
+            }
 
         } else if (mouse_event === "mouseup") {
 
@@ -98,7 +102,7 @@ function basebutton(widget_id, url, skin, parameters)
 
         if (first_time === true) {
             // means its the first time, so we setup timer
-            self.timer = setInterval(run_timer, 1000, false, Date.now())
+            self.timer = setInterval(run_timer, self.repeat_interval * 1000, false, Date.now())
 
         } else {
             // means its a continous run, so we keep firing events
