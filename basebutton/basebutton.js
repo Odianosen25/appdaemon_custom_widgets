@@ -102,8 +102,7 @@ function basebutton(widget_id, url, skin, parameters)
 
         } else {
             // means its a continous run, so we keep firing events
-            console.log(duration);
-            
+            // console.log(duration);
         }
 
         var args = {};
