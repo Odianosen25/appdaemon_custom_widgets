@@ -8,6 +8,9 @@ function basebutton(widget_id, url, skin, parameters)
     var monitored_entities = [];
     self.parameters = parameters;
     self.entity = self.parameters.entity;
+    self.state = undefined;
+    self.action = undefined;
+    self.timer = undefined;
 
     self.OnEvent = OnEvent;
     self.OnStateUpdate = OnStateUpdate;
@@ -37,24 +40,80 @@ function basebutton(widget_id, url, skin, parameters)
     {
 
         const mouse_event = event.type;
+        var button_state = "off";
         var action = "idle";
 
         if (mouse_event === "mousedown") {
 
+            button_state = "on"
             action = "pressed";
+
+            self.timer = setTimeout(run_timer, 1500, true, Date.now()); // ran if button not released after 1.5 seconds
 
         } else if (mouse_event === "mouseup") {
 
-            action = "released";
+            button_state = "off"
+
+            if (self.timer != undefined){
+                if (self.action === "pressed") {
+                    // means its the first time, so timeout is running
+                    clearTimeout(self.timer);
+
+                } else {
+                    // means its not the first time, so timeinterval is running
+                    clearInterval(self.timer);
+                }
+
+                self.timer = undefined;
+            }
+
+            if (self.action != "pressed-hold") {
+                action = "released";
+
+            } else {
+                action = "released-hold";
+            }
+        }
+
+        // first we setup entity state
+        var args = {};
+        args["service"] = "state/set";
+        args["entity_id"] = self.entity;
+        args["state"] = button_state;
+        args["action"] = action;
+
+        self.call_service(self, args);
+        self.action = action;
+
+        // next we fire an event
+        fire_event(action, 0)
+
+    }
+
+    function run_timer(first_time, start_time)
+    {
+        var action = "press-hold";
+        var duration = parseInt((Date.now() - start_time)/1000);
+
+        if (first_time === true) {
+            // means its the first time, so we setup timer
+            self.timer = setInterval(run_timer, 1000, false, Date.now())
+
+        } else {
+            // means its a continous run, so we keep firing events
+            console.log(duration);
+            
         }
 
         var args = {};
         args["service"] = "state/set";
         args["entity_id"] = self.entity;
-        args["state"] = action;
+        args["action"] = action;
+        args["duration"] = duration
 
-        self.call_service(self, args);
-        //console.log(args);
+        self.call_service(self, args);        
+        fire_event(action, duration);
+        self.action = action;
 
     }
 
@@ -95,5 +154,14 @@ function basebutton(widget_id, url, skin, parameters)
         }
     }
 
+    function fire_event(event, duration) {
+        args["service"] = "event/fire";
+        args["event"] = event;
+        args["entity_id"] = self.entity;
+        args["duration"] = duration;
+
+        self.call_service(self, args);
+
+    }
     
 }
