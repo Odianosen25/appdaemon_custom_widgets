@@ -35,7 +35,7 @@ function baseinteract(widget_id, url, skin, parameters)
     // get the mouse entity
 
     var callbacks = [
-        {"selector": "img", "action": actions, "event" : true, "callback": OnEvent},
+        {"selector": "img", "action": actions, "DOMEventData" : true, "callback": OnEvent},
     ];
 
     // First check there is an entity, and if there is setup callback
