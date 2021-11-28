@@ -54,7 +54,7 @@ function basebutton(widget_id, url, skin, parameters)
         args["state"] = action;
 
         self.call_service(self, args);
-        console.log(args);
+        //console.log(args);
 
     }
 
