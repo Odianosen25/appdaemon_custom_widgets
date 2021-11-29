@@ -21,11 +21,12 @@ function basebutton(widget_id, url, skin, parameters)
     if (self.entity != undefined && "enable" in self.parameters && self.parameters.enable === 1)
     {
         // register for the mouse events
-        var prams = {};
-        prams.entity_id = self.entity;
+        var params = {};
+        params.entity_id = self.entity;
+        params.set_button_state = self.parameters.set_button_state || 1;
 
         var callbacks = [
-            {"selector": '#' + widget_id + ' > span', "action": "mouseup mousedown", "DOMEventData" : true, "callback": OnEvent, "parameters": prams},
+            {"selector": '#' + widget_id + ' > span', "action": "mouseup mousedown", "DOMEventData" : true, "callback": OnEvent, "parameters": params},
         ];
 
         // register for entity state change
@@ -45,7 +46,9 @@ function basebutton(widget_id, url, skin, parameters)
     {
 
         const entity_id = event.data.parameters.entity_id;
+        const set_button_state = event.data.parameters.set_button_state;
         const mouse_event = event.type;
+        
         var button_state = "off";
         var action = "idle";
 
@@ -83,15 +86,20 @@ function basebutton(widget_id, url, skin, parameters)
             }
         }
 
-        // first we setup entity state
-        var args = {};
-        args["service"] = "state/set";
-        args["entity_id"] = entity_id;
-        args["state"] = button_state;
-        args["action"] = action;
-        args["duration"] = 0;
+        // first we check if to setup entity state
 
-        self.call_service(self, args);
+        if (set_button_state === 1)
+        {
+            var args = {};
+            args["service"] = "state/set";
+            args["entity_id"] = entity_id;
+            args["state"] = button_state;
+            args["action"] = action;
+            args["duration"] = 0;
+
+            self.call_service(self, args);
+        }
+        
         self.action = action;
 
         // next we fire an event
