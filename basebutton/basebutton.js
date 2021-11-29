@@ -71,7 +71,7 @@ function basebutton(widget_id, url, skin, parameters)
                 self.timer = undefined;
             }
 
-            if (self.action != "pressed-hold") {
+            if (self.action != "press-hold") {
                 action = "released";
 
             } else {
@@ -159,6 +159,7 @@ function basebutton(widget_id, url, skin, parameters)
     }
 
     function fire_event(event, duration) {
+        var args = {};
         args["service"] = "event/fire";
         args["event"] = event;
         args["entity_id"] = self.entity;
