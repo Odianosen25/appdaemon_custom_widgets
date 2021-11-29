@@ -21,8 +21,11 @@ function basebutton(widget_id, url, skin, parameters)
     if (self.entity != undefined && "enable" in self.parameters && self.parameters.enable === 1)
     {
         // register for the mouse events
+        var prams = {};
+        prams.entity_id = self.entity;
+
         var callbacks = [
-            {"selector": '#' + widget_id + ' > span', "action": "mouseup mousedown", "DOMEventData" : true, "callback": OnEvent},
+            {"selector": '#' + widget_id + ' > span', "action": "mouseup mousedown", "DOMEventData" : true, "callback": OnEvent, "parameters": prams},
         ];
 
         // register for entity state change
@@ -41,6 +44,7 @@ function basebutton(widget_id, url, skin, parameters)
     function OnEvent(event)
     {
 
+        const entity_id = event.data.parameters.entity_id;
         const mouse_event = event.type;
         var button_state = "off";
         var action = "idle";
@@ -51,7 +55,7 @@ function basebutton(widget_id, url, skin, parameters)
             action = "pressed";
 
             if (self.hold_time !== undefined) {
-                self.timer = setTimeout(run_timer, self.hold_time * 1000, true, Date.now());
+                self.timer = setTimeout(run_timer, self.hold_time * 1000, entity_id, true, Date.now());
             }
 
         } else if (mouse_event === "mouseup") {
@@ -82,7 +86,7 @@ function basebutton(widget_id, url, skin, parameters)
         // first we setup entity state
         var args = {};
         args["service"] = "state/set";
-        args["entity_id"] = self.entity;
+        args["entity_id"] = entity_id;
         args["state"] = button_state;
         args["action"] = action;
         args["duration"] = 0;
@@ -91,18 +95,18 @@ function basebutton(widget_id, url, skin, parameters)
         self.action = action;
 
         // next we fire an event
-        fire_event(action, 0)
+        fire_event(action, entity_id, 0)
 
     }
 
-    function run_timer(first_time, start_time)
+    function run_timer(entity_id, first_time, start_time)
     {
         var action = "press-hold";
         var duration = parseInt((Date.now() - start_time)/1000);
 
         if (first_time === true) {
             // means its the first time, so we setup timer
-            self.timer = setInterval(run_timer, self.repeat_interval * 1000, false, Date.now())
+            self.timer = setInterval(run_timer, self.repeat_interval * 1000, entity_id, false, Date.now())
 
         } else {
             // means its a continous run, so we keep firing events
@@ -111,12 +115,12 @@ function basebutton(widget_id, url, skin, parameters)
 
         var args = {};
         args["service"] = "state/set";
-        args["entity_id"] = self.entity;
+        args["entity_id"] = entity_id;
         args["action"] = action;
         args["duration"] = duration
 
         self.call_service(self, args);        
-        fire_event(action, duration);
+        fire_event(action, entity_id, duration);
         self.action = action;
 
     }
@@ -158,11 +162,11 @@ function basebutton(widget_id, url, skin, parameters)
         }
     }
 
-    function fire_event(event, duration) {
+    function fire_event(event, entity_id, duration) {
         var args = {};
         args["service"] = "event/fire";
         args["event"] = event;
-        args["entity_id"] = self.entity;
+        args["entity_id"] = entity_id;
         args["duration"] = duration;
 
         self.call_service(self, args);
