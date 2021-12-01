@@ -116,16 +116,17 @@ function basebutton(widget_id, url, skin, parameters)
     function run_timer(entity_id, first_time, start_time)
     {
         var action = "press-hold";
-        var duration = roundOff((Date.now() - start_time)/1000, 2);
+        var duration;
 
         if (first_time === true) {
             // means its the first time, so we setup timer
             self.timer = setInterval(run_timer, self.repeat_interval * 1000, entity_id, false, Date.now())
             self.event_timestamp = Date.now();
+            duration = 0;
 
         } else {
             // means its a continous run, so we keep firing events
-            // console.log(duration);
+            duration = roundOff((Date.now() - start_time)/1000, 2);
         }
 
         var args = {};
