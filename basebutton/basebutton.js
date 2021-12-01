@@ -10,9 +10,10 @@ function basebutton(widget_id, url, skin, parameters)
     self.entity = self.parameters.entity;
     self.hold_time = self.parameters.hold_time;
     self.repeat_interval = self.parameters.repeat_interval || 1;
-    self.state = undefined;
-    self.action = undefined;
-    self.timer = undefined;
+    self.state;
+    self.action;
+    self.timer;
+    self.event_timestamp;
 
     self.OnEvent = OnEvent;
     self.OnStateUpdate = OnStateUpdate;
@@ -44,7 +45,6 @@ function basebutton(widget_id, url, skin, parameters)
 
     function OnEvent(event)
     {
-
         const entity_id = event.data.parameters.entity_id;
         const set_button_state = event.data.parameters.set_button_state;
         const mouse_event = event.type;
@@ -86,7 +86,11 @@ function basebutton(widget_id, url, skin, parameters)
             } else {
                 action = "release-hold";
             }
+
+            duration = roundOff((Date.now() - self.event_timestamp)/1000, 2);
         }
+
+        self.event_timestamp = Date.now();
 
         // first we check if to setup entity state
 
@@ -97,10 +101,7 @@ function basebutton(widget_id, url, skin, parameters)
             args["entity_id"] = entity_id;
             args["state"] = button_state;
             args["action"] = action;
-
-            if (duration != undefined) {
-                args["duration"] = duration;
-            }
+            args["duration"] = duration;
 
             self.call_service(self, args);
         }
@@ -108,7 +109,7 @@ function basebutton(widget_id, url, skin, parameters)
         self.action = action;
 
         // next we fire an event
-        fire_event(action, entity_id, 0)
+        fire_event(action, entity_id, duration)
 
     }
 
@@ -120,6 +121,7 @@ function basebutton(widget_id, url, skin, parameters)
         if (first_time === true) {
             // means its the first time, so we setup timer
             self.timer = setInterval(run_timer, self.repeat_interval * 1000, entity_id, false, Date.now())
+            self.event_timestamp = Date.now();
 
         } else {
             // means its a continous run, so we keep firing events
