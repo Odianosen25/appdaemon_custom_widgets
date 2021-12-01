@@ -48,14 +48,16 @@ function basebutton(widget_id, url, skin, parameters)
         const entity_id = event.data.parameters.entity_id;
         const set_button_state = event.data.parameters.set_button_state;
         const mouse_event = event.type;
-        
+
         var button_state = "off";
         var action = "idle";
+        var duration;
 
         if (mouse_event === "mousedown") {
 
             button_state = "on"
             action = "pressed";
+            duration = 0;
 
             if (self.hold_time !== undefined) {
                 self.timer = setTimeout(run_timer, self.hold_time * 1000, entity_id, true, Date.now());
@@ -95,7 +97,10 @@ function basebutton(widget_id, url, skin, parameters)
             args["entity_id"] = entity_id;
             args["state"] = button_state;
             args["action"] = action;
-            args["duration"] = 0;
+
+            if (duration != undefined) {
+                args["duration"] = duration;
+            }
 
             self.call_service(self, args);
         }
@@ -110,7 +115,7 @@ function basebutton(widget_id, url, skin, parameters)
     function run_timer(entity_id, first_time, start_time)
     {
         var action = "press-hold";
-        var duration = parseInt((Date.now() - start_time)/1000);
+        var duration = roundOff((Date.now() - start_time)/1000, 2);
 
         if (first_time === true) {
             // means its the first time, so we setup timer
@@ -179,6 +184,13 @@ function basebutton(widget_id, url, skin, parameters)
 
         self.call_service(self, args);
 
+    }
+
+
+    // for rounding off
+    let roundOff = (num, places) => {
+        const x = Math.pow(10, places);
+        return Math.round(num * x) / x;
     }
     
 }
